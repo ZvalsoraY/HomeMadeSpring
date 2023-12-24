@@ -19,7 +19,10 @@ public class Context {
 
     public static Context load(String packageName) {
         Reflections reflections = new Reflections(packageName, new SubTypesScanner(false));
-        Map<String, Class<?>> clazzes = reflections.getSubTypesOf(Object.class).stream().filter(clazz -> clazz.isAnnotationPresent(Component.class)).collect(Collectors.toMap(clazz -> clazz.getAnnotation(Component.class).value(), clazz -> clazz));
+        Map<String, Class<?>> clazzes = reflections.getSubTypesOf(Object.class)
+                .stream().filter(clazz -> clazz.isAnnotationPresent(Component.class))
+                .collect(Collectors.toMap(clazz -> clazz.getAnnotation(Component.class)
+                        .value(), clazz -> clazz));
 
         return new Context(clazzes);
     }
