@@ -5,6 +5,7 @@ import org.example.annotations.Component;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Map;
@@ -56,9 +57,23 @@ public class Context {
                             }
 
                     ).collect(Collectors.toList());
+            var ret = constructor.newInstance(params.toArray());
             return constructor.newInstance(params.toArray());
         } else {
-            return clazz.getConstructor().newInstance();
+            Object clazzDefaultConstructor = clazz.getConstructor().newInstance();
+
+            var annotatedFields = Arrays.stream(clazz.getDeclaredFields())
+                    .filter(field -> field.isAnnotationPresent(Autowired.class));
+
+            annotatedFields.forEach(field ->{
+                try{
+                    field.setAccessible(true);
+                    field.set(clazzDefaultConstructor, get(field.getType().getAnnotation(Component.class).value()));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            return clazzDefaultConstructor;
         }
     }
 
